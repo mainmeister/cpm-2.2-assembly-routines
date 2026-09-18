@@ -119,4 +119,4 @@ STACK: EQU $
 ---
 
 ## 📜 License
-Released under the **MIT License**. Free for use in open-source, commercial, and retro-computing projects.
+Released under the **GNU General Public License v3.0**. Free for use in open-source, commercial, and retro-computing projects.

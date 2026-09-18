@@ -1,0 +1,517 @@
+; =============================================================================
+; CONTROL-v7.MAC - Structured Control Flow & BCD Math Macros for 8080/Z80
+; Compatible with Microsoft MACRO-80 (M80) and Digital Research MAC/RMAC.
+; Version 8.0: Adds Intel 8251 USART / Serial I/O High-Level Macros.
+; =============================================================================
+
+; -----------------------------------------------------------------------------
+; 1. IF-THEN-ELSE STRUCTURES
+; -----------------------------------------------------------------------------
+IF_A_EQ MACRO VAL, ID
+    CPI VAL
+    JNZ ??EL&ID
+    ENDM
+
+IF_A_NE MACRO VAL, ID
+    CPI VAL
+    JZ ??EL&ID
+    ENDM
+
+IF_A_LT MACRO VAL, ID
+    CPI VAL
+    JNC ??EL&ID
+    ENDM
+
+IF_A_GE MACRO VAL, ID
+    CPI VAL
+    JC ??EL&ID
+    ENDM
+
+IF_CARRY MACRO ID
+    JNC ??EL&ID
+    ENDM
+
+IF_NCARRY MACRO ID
+    JC ??EL&ID
+    ENDM
+
+IF_ZERO MACRO ID
+    JNZ ??EL&ID
+    ENDM
+
+IF_NZERO MACRO ID
+    JZ ??EL&ID
+    ENDM
+
+ELSE_BL MACRO ID
+    JMP ??EN&ID
+??EL&ID:
+    ENDM
+
+ENDIF_BL MACRO ID
+??EL&ID:
+    ENDM
+
+ENDIF_ELSE MACRO ID
+??EN&ID:
+    ENDM
+
+; -----------------------------------------------------------------------------
+; 2. WHILE-LOOP AND DO-WHILE STRUCTURES
+; -----------------------------------------------------------------------------
+WHILE_A_EQ MACRO VAL, ID
+??WS&ID:
+    CPI VAL
+    JNZ ??WE&ID
+    ENDM
+
+WHILE_A_NE MACRO VAL, ID
+??WS&ID:
+    CPI VAL
+    JZ ??WE&ID
+    ENDM
+
+WHILE_A_LT MACRO VAL, ID
+??WS&ID:
+    CPI VAL
+    JNC ??WE&ID
+    ENDM
+
+WHILE_A_GE MACRO VAL, ID
+??WS&ID:
+    CPI VAL
+    JC ??WE&ID
+    ENDM
+
+WEND MACRO ID
+    JMP ??WS&ID
+??WE&ID:
+    ENDM
+
+DO_LOOP MACRO ID
+??DS&ID:
+    ENDM
+
+DO_WHILE_A_NE MACRO VAL, ID
+    CPI VAL
+    JNZ ??DS&ID
+    ENDM
+
+DO_WHILE_ZERO MACRO ID
+    JZ ??DS&ID
+    ENDM
+
+; -----------------------------------------------------------------------------
+; 3. FOR-LOOP STRUCTURES
+; -----------------------------------------------------------------------------
+FOR_DCR MACRO REG, COUNT, ID
+    MVI REG, COUNT
+??FS&ID:
+    ENDM
+
+NEXT_DCR MACRO REG, ID
+    DCR REG
+    JNZ ??FS&ID
+    ENDM
+
+FOR_DCX MACRO RP, COUNT, ID
+    LXI RP, COUNT
+??FS&ID:
+    ENDM
+
+NEXT_DCX_BC MACRO ID
+    DCX BC
+    MOV A, B
+    ORA C
+    JNZ ??FS&ID
+    ENDM
+
+NEXT_DCX_DE MACRO ID
+    DCX DE
+    MOV A, D
+    ORA E
+    JNZ ??FS&ID
+    ENDM
+
+NEXT_DCX_HL MACRO ID
+    DCX HL
+    MOV A, H
+    ORA L
+    JNZ ??FS&ID
+    ENDM
+
+; -----------------------------------------------------------------------------
+; 4. 16-BIT REGISTER COMPARISON MACROS
+; -----------------------------------------------------------------------------
+COMPARE_HL_DE MACRO
+    MOV A, A            ; Clear Carry
+    MOV A, L
+    SUB E
+    MOV A, H
+    SBB D
+    ENDM
+
+; -----------------------------------------------------------------------------
+; 5. FLOATING-POINT HIGH-LEVEL MATH MACROS
+; -----------------------------------------------------------------------------
+FP_ADD_MEM MACRO PTR_HL
+    LXI HL, PTR_HL
+    CALL FP_LOAD2
+    CALL FP_ADD
+    ENDM
+
+FP_SUB_MEM MACRO PTR_HL
+    LXI HL, PTR_HL
+    CALL FP_LOAD2
+    CALL FP_SUB
+    ENDM
+
+FP_MUL_MEM MACRO PTR_HL
+    LXI HL, PTR_HL
+    CALL FP_LOAD2
+    CALL FP_MUL
+    ENDM
+
+FP_DIV_MEM MACRO PTR_HL
+    LXI HL, PTR_HL
+    CALL FP_LOAD2
+    CALL FP_DIV
+    ENDM
+
+; -----------------------------------------------------------------------------
+; 6. BCD MATH HIGH-LEVEL MACROS (NEW in v5)
+; Convenient wrappers for packed BCD addition, subtraction, and printing.
+; -----------------------------------------------------------------------------
+
+; Multi-byte Packed BCD Addition: DEST = DEST + SRC
+BCD_ADD_MEM MACRO DEST, SRC, CNT
+    LXI HL, DEST
+    LXI DE, SRC
+    MVI B, CNT
+    CALL BCD_ADD
+    ENDM
+
+; Multi-byte Packed BCD Subtraction: DEST = DEST - SRC
+BCD_SUB_MEM MACRO DEST, SRC, CNT
+    LXI HL, DEST
+    LXI DE, SRC
+    MVI B, CNT
+    CALL BCD_SUB
+    ENDM
+
+; Print Packed BCD Buffer with Leading Zero Suppression
+BCD_PRINT_MEM MACRO PTR, CNT
+    LXI HL, PTR
+    MVI B, CNT
+    CALL PR_BCD
+    ENDM
+
+; -----------------------------------------------------------------------------
+; 6. 16.16 FIXED-POINT BINARY MATH MACROS (NEW in v6)
+; High-level wrappers for 32-bit (16.16) fixed-point binary arithmetic.
+; -----------------------------------------------------------------------------
+
+; Compute FIX_ACC1 = FIX_ACC1 + [PTR_HL]
+FIX_ADD_MEM MACRO PTR_HL
+    LXI HL, PTR_HL
+    CALL FIX_LOAD2
+    CALL FIX_ADD
+    ENDM
+
+; Compute FIX_ACC1 = FIX_ACC1 - [PTR_HL]
+FIX_SUB_MEM MACRO PTR_HL
+    LXI HL, PTR_HL
+    CALL FIX_LOAD2
+    CALL FIX_SUB
+    ENDM
+
+; Compute FIX_ACC1 = FIX_ACC1 * [PTR_HL]
+FIX_MUL_MEM MACRO PTR_HL
+    LXI HL, PTR_HL
+    CALL FIX_LOAD2
+    CALL FIX_MUL
+    ENDM
+
+; Compute FIX_ACC1 = FIX_ACC1 / [PTR_HL]
+FIX_DIV_MEM MACRO PTR_HL
+    LXI HL, PTR_HL
+    CALL FIX_LOAD2
+    CALL FIX_DIV
+    ENDM
+
+; Load [PTR_HL] into FIX_ACC1 and print
+FIX_PRINT_MEM MACRO PTR_HL
+    LXI HL, PTR_HL
+    CALL FIX_LOAD
+    CALL PR_FIX
+    ENDM
+
+; -----------------------------------------------------------------------------
+; 7. CRC-16 DATA INTEGRITY MACROS (NEW in v7)
+; Convenient wrappers for computing CRC-16-CCITT checksums on memory and files.
+; -----------------------------------------------------------------------------
+
+; Compute CRC-16 for buffer PTR_HL of length CNT_BC
+CRC16_BUF_MEM MACRO PTR_HL, CNT_BC
+    LXI HL, PTR_HL
+    LXI B, CNT_BC
+    CALL CRC16_BUF
+    ENDM
+
+; Compute CRC-16 for opened file FCB_DE
+CRC16_FILE_MEM MACRO FCB_DE
+    LXI DE, FCB_DE
+    CALL CRC16_FILE
+    ENDM
+
+; -----------------------------------------------------------------------------
+; 8. INTEL 8251 USART / SERIAL I/O MACROS (NEW in v8)
+; High-level wrappers for initializing 8251 serial ports and transmitting data.
+; -----------------------------------------------------------------------------
+
+; Initialize 8251 USART ports and configuration
+UART_INIT_PORTS MACRO DATA_P, STAT_P, MODE_B, CTRL_B
+    MVI A, DATA_P
+    MOV B, A
+    MVI A, STAT_P
+    CALL UART_SET_PORTS
+    MVI A, MODE_B
+    STA UART_MODE_BYTE
+    MVI A, CTRL_B
+    STA UART_CTRL_BYTE
+    CALL UART_INIT
+    ENDM
+
+; Send null-terminated string PTR_HL over 8251 serial UART
+UART_SEND_STR_MEM MACRO PTR_HL
+    LXI HL, PTR_HL
+    CALL UART_SEND_STR
+    ENDM
+
+; -----------------------------------------------------------------------------
+; 8. 32-BIT INTEGER ARITHMETIC MACROS (NEW in v9)
+; High-level wrappers for 32-bit binary integer arithmetic routines.
+; -----------------------------------------------------------------------------
+
+; Compute DEST = DEST + SRC (32-bit)
+ADD32_MEM MACRO DEST, SRC
+    LXI HL, DEST
+    LXI DE, SRC
+    CALL ADD32
+    ENDM
+
+; Compute DEST = DEST - SRC (32-bit)
+SUB32_MEM MACRO DEST, SRC
+    LXI HL, DEST
+    LXI DE, SRC
+    CALL SUB32
+    ENDM
+
+; Compute DEST = DEST * SRC (32-bit)
+MUL32_MEM MACRO DEST, SRC
+    LXI HL, DEST
+    LXI DE, SRC
+    CALL MUL32
+    ENDM
+
+; Compute DEST = DEST / SRC (32-bit)
+DIV32_MEM MACRO DEST, SRC
+    LXI HL, DEST
+    LXI DE, SRC
+    CALL DIV32
+    ENDM
+
+; Print 32-bit Unsigned Integer at PTR_HL
+PRDEC32_MEM MACRO PTR_HL
+    LXI HL, PTR_HL
+    CALL PRDEC32
+    ENDM
+
+; -----------------------------------------------------------------------------
+; 10. 64-BIT BINARY INTEGER MATH MACROS (NEW in v10)
+; High-level wrappers for 64-bit binary integer arithmetic.
+; -----------------------------------------------------------------------------
+
+; Compute [DEST] = [DEST] + [SRC] (64-bit, 8 bytes each)
+ADD64_MEM MACRO DEST, SRC
+    LXI HL, DEST
+    LXI DE, SRC
+    CALL ADD64
+    ENDM
+
+; Compute [DEST] = [DEST] - [SRC] (64-bit, 8 bytes each)
+SUB64_MEM MACRO DEST, SRC
+    LXI HL, DEST
+    LXI DE, SRC
+    CALL SUB64
+    ENDM
+
+; Compute INT64_ACC1 = [PTR_HL] * [PTR_DE]
+MUL64_MEM MACRO PTR_HL, PTR_DE
+    LXI HL, PTR_HL
+    LXI DE, INT64_ACC1
+    LXI BC, 8
+    CALL MEMCPY
+    LXI HL, PTR_DE
+    LXI DE, INT64_ACC2
+    LXI BC, 8
+    CALL MEMCPY
+    CALL MUL64
+    ENDM
+
+; Compute INT64_ACC1 / [PTR_DE] -> Quotient in INT64_ACC1
+DIV64_MEM MACRO PTR_HL, PTR_DE
+    LXI HL, PTR_HL
+    LXI DE, INT64_ACC1
+    LXI BC, 8
+    CALL MEMCPY
+    LXI HL, PTR_DE
+    LXI DE, INT64_ACC2
+    LXI BC, 8
+    CALL MEMCPY
+    CALL DIV64
+    ENDM
+
+; Print 64-bit unsigned integer stored at PTR_HL
+PRDEC64_MEM MACRO PTR_HL
+    LXI HL, PTR_HL
+    CALL PRDEC64
+    ENDM
+
+; -----------------------------------------------------------------------------
+; 10. DYNAMIC HEAP MEMORY ALLOCATION MACROS (NEW in v11)
+; High-level wrappers for MALLOC, FREE, CALLOC, REALLOC, and HEAP stats.
+; -----------------------------------------------------------------------------
+
+; Initialize Heap: HEAP_INIT_MEM start_addr, size_bytes
+HEAP_INIT_MEM MACRO START_PTR, SIZE_BYTES
+    LXI HL, START_PTR
+    LXI DE, SIZE_BYTES
+    CALL MALLOC_INIT
+    ENDM
+
+; Allocate payload bytes: MALLOC_MEM size_bytes -> returns payload ptr in HL
+MALLOC_MEM MACRO SIZE_BYTES
+    LXI HL, SIZE_BYTES
+    CALL MALLOC
+    ENDM
+
+; Free allocated payload: FREE_MEM ptr_hl
+FREE_MEM MACRO PTR_HL
+    LXI HL, PTR_HL
+    CALL FREE
+    ENDM
+
+; Allocate and zero memory: CALLOC_MEM count, elem_size -> returns HL
+CALLOC_MEM MACRO COUNT, ELEM_SIZE
+    LXI HL, COUNT
+    LXI DE, ELEM_SIZE
+    CALL CALLOC
+    ENDM
+
+; Print Heap statistics and fragmentation details
+HEAP_PRINT_MEM MACRO
+    CALL PR_HEAP_INFO
+    ENDM
+
+; -----------------------------------------------------------------------------
+; 8. EXTENDED STRING MANIPULATION MACROS (NEW in v12)
+; Convenient wrappers for substring searching, wildcard matching, tokenization,
+; trimming, and case conversions.
+; -----------------------------------------------------------------------------
+
+; Find substring NEEDLE in HAYSTACK
+STRSTR_MEM MACRO HAYSTACK, NEEDLE
+    LXI HL, HAYSTACK
+    LXI DE, NEEDLE
+    CALL STRSTR
+    ENDM
+
+; Wildcard match TEXT against PATTERN ('?' and '*')
+STRMATCH_MEM MACRO TEXT, PATTERN
+    LXI HL, TEXT
+    LXI DE, PATTERN
+    CALL STRMATCH
+    ENDM
+
+; Tokenize STR_PTR using DELIMS
+STRTOK_MEM MACRO STR_PTR, DELIMS
+    LXI HL, STR_PTR
+    LXI DE, DELIMS
+    CALL STRTOK
+    ENDM
+
+; Trim leading and trailing spaces in-place
+STRTRIM_MEM MACRO STR_PTR
+    LXI HL, STR_PTR
+    CALL STRTRIM
+    ENDM
+
+; Convert string to uppercase in-place
+STRUPR_MEM MACRO STR_PTR
+    LXI HL, STR_PTR
+    CALL STRUPR
+    ENDM
+
+; Convert string to lowercase in-place
+STRLWR_MEM MACRO STR_PTR
+    LXI HL, STR_PTR
+    CALL STRLWR
+    ENDM
+
+; -----------------------------------------------------------------------------
+; 8. COMMAND-LINE ARGUMENT PARSING & VT100 TERMINAL MACROS (NEW in v13)
+; Convenient wrappers for command line parsing and VT100 ANSI sequences.
+; -----------------------------------------------------------------------------
+
+; Parse command line tail at 0080H
+ARG_PARSE MACRO
+    CALL ARG_INIT
+    ENDM
+
+; Get argument pointer for index (IDX) in HL
+ARG_GET_MEM MACRO IDX
+    MVI A, IDX
+    CALL ARG_GET
+    ENDM
+
+; Search for command line flag character (FLAG_CHAR)
+ARG_FIND_FLAG_MEM MACRO FLAG_CHAR
+    MVI A, FLAG_CHAR
+    CALL ARG_FIND_FLAG
+    ENDM
+
+; VT100 Move Cursor to Row (ROW) and Column (COL)
+VT_GOTO_XY MACRO ROW, COL
+    MVI D, ROW
+    MVI E, COL
+    CALL VT_SET_CURSOR
+    ENDM
+
+; VT100 Set Foreground (FG) and Background (BG) Colors
+VT_COLOR MACRO FG, BG
+    MVI A, FG
+    CALL VT_SET_FG_COLOR
+    MVI A, BG
+    CALL VT_SET_BG_COLOR
+    ENDM
+
+; VT100 Set Display Attribute (0=Normal, 1=Bold, 4=Underline, 5=Blink, 7=Reverse)
+VT_ATTR MACRO ATTR_CODE
+    MVI A, ATTR_CODE
+    CALL VT_SET_ATTR
+    ENDM
+
+; VT100 Clear Screen and Home Cursor
+VT_CLS_MEM MACRO
+    CALL VT_CLS
+    ENDM
+
+; VT100 Draw Box at (ROW, COL) with dimensions HEIGHT x WIDTH
+VT_DRAW_BOX MACRO ROW, COL, HEIGHT, WIDTH
+    MVI D, ROW
+    MVI E, COL
+    MVI B, HEIGHT
+    MVI C, WIDTH
+    CALL VT_BOX
+    ENDM

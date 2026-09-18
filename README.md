@@ -13,11 +13,11 @@ High-level control-flow constructs for assembly language without performance ove
 * **Conditional Blocks**: `IF_A_EQ`, `IF_A_NE`, `IF_A_LT`, `IF_A_GE`, `IF_CARRY`, `IF_ZERO`, `ELSE_BL`, `ENDIF_BL`, `ENDIF_ELSE`.
 * **Structured Loops**: `WHILE_A_NE`, `WEND`, `DO_LOOP`, `DO_WHILE_A_NE`, and index-constrained `FOR_DCR` / `FOR_DCX` loops.
 * **16-Bit Register Comparisons**: `COMPARE_HL_DE` for unsigned register pair evaluation.
-* **High-Level Abstraction Wrappers**: Single-line macros for 32-bit math, BCD operations, floating-point math, 16.16 fixed-point arithmetic, CRC calculation, USART communication, heap allocation, string manipulation, argument parsing, and VT100 terminal commands.
+* **High-Level Abstraction Wrappers**: Single-line macros for 32-bit math, BCD operations, floating-point math, 16.16 fixed-point arithmetic, CRC calculation, USART communication, heap allocation, string manipulation, argument parsing, VT100 terminal commands, and console prompting.
 
 ### 2. Standard CP/M BDOS & File System Wrappers
 * **Console & Peripheral Character I/O**: Wrappers for BDOS Functions 1–6 (`COUT`, `CIN`, `CSTAT`, `RAWIO_IN`, `LOUT`, `POUT`, `RIN`, `PRSTR`, `PRNL`) ([CP/M BDOS Reference](REFERENCES-v2.md#1-operating-system--system-architecture-specifications)).
-* **FCB Parsing & Line Input**: `GETLINE` for console text reading with CR stripping, and `PARSE_FCB` for manual command string parsing into 36-byte File Control Blocks with drive specifier and wildcard support ([CP/M Manual](REFERENCES-v2.md#1-operating-system--system-architecture-specifications)).
+* **FCB Parsing & Line Input**: `GETLINE` for console text reading with CR stripping, `PROMPT_GETLINE` / `PROMPT_GETLINE_MEM` for displaying a prompt string and capturing line input in a single call, and `PARSE_FCB` for manual command string parsing into 36-byte File Control Blocks with drive specifier and wildcard support ([CP/M Manual](REFERENCES-v2.md#1-operating-system--system-architecture-specifications)).
 * **Wildcard Directory Listing**: `DIR_LIST` scans disk directories using BDOS Search First/Next, automatically filtering deleted entries (`0E5H`) and stripping file attribute bits (`7FH`) ([BDOS Directory Calls](REFERENCES-v2.md#1-operating-system--system-architecture-specifications)).
 * **File Operations**: Sequential record reading/writing, creation, deletion, renaming, DMA address setting, and sector pointer resets (`FOPEN`, `FCLOSE`, `FDELETE`, `FMAKE`, `FREAD`, `FWRITE`, `FSET_DMA`, `FSEEK_START`) ([BDOS File Operations](REFERENCES-v2.md#1-operating-system--system-architecture-specifications)).
 * **Disk Geometry Interrogation**: `PR_DRIVE_INFO` queries BDOS Function 31 to retrieve and display active Disk Parameter Block (DPB) parameters (sectors/track, allocation block size, directory capacity) ([DPB Reference](REFERENCES-v2.md#1-operating-system--system-architecture-specifications)).
@@ -43,10 +43,10 @@ High-level control-flow constructs for assembly language without performance ove
 
 ## 📁 Repository Structure
 
-* **`CPM22LIB.ASM`**: The complete assembly function library containing all core subroutines, buffer areas, and system equates.
-* **`CONTROL.MAC`**: Macro library defining structured control constructs and high-level subroutine abstraction wrappers.
-* **`DEMO.ASM`**: Full interactive command shell demonstration program showing real-world usage of all library subroutines and macros.
-* **`citations.md`**: Complete annotated bibliography with direct web links to operating system manuals, textbooks, toolchains, and hardware datasheets.
+* **`CPM22LIB-v14.ASM`**: The complete assembly function library containing all core subroutines, buffer areas, and system equates.
+* **`CONTROL-v14.MAC`**: Macro library defining structured control constructs and high-level subroutine abstraction wrappers.
+* **`DEMO-v14.ASM`**: Full interactive command shell demonstration program showing real-world usage of all library subroutines and macros.
+* **`REFERENCES-v2.md`**: Complete annotated bibliography with direct web links to operating system manuals, textbooks, toolchains, and hardware datasheets.
 
 ---
 
@@ -62,9 +62,9 @@ This library is compatible with standard CP/M 8080/Z80 macro assemblers and deve
 To assemble and link the demo shell under CP/M using Microsoft M80 and L80:
 
 ```text
-A>M80 =DEMO-v13.ASM
-A>L80 DEMO-v13,DEMO-v13/N/E
-A>DEMO-v13
+A>M80 =DEMO-v14.ASM
+A>L80 DEMO-v14,DEMO-v14/N/E
+A>DEMO-v14
 ```
 
 ---
@@ -72,7 +72,7 @@ A>DEMO-v13
 ## 💻 Example Usage
 
 ```assembly
-    INCLUDE CONTROL-v13.MAC
+    INCLUDE CONTROL-v14.MAC
 
     ORG 0100H
 
@@ -110,7 +110,7 @@ MSG_NO_MATCH: DB 'Value does not match.', 0
 VAL1_32:      DB 00H, 0E1H, 0F5H, 05FH ; 1,610,000,000
 VAL2_32:      DB 00H, 0E1H, 0F5H, 05FH ; 1,610,000,000
 
-    INCLUDE CPM22LIB-v13.ASM
+    INCLUDE CPM22LIB-v14.ASM
 
     DS 32
 STACK: EQU $

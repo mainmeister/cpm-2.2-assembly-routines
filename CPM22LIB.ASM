@@ -240,6 +240,26 @@ GETLINE:
     MOV A, B
     RET
 
+; -----------------------------------------------------------------------------
+; PROMPT_GETLINE - Print Prompt String and Read Null-Terminated Line
+; Entry: DE = Address of null-terminated prompt string
+;        HL = Address of target input buffer (must be max_len + 2 bytes)
+;        A  = Maximum allowable characters to read
+; Exit:  HL = Address of first actual character in input text buffer
+;        A  = Number of characters actually read
+; Registers used: AF, BC, DE, HL
+; -----------------------------------------------------------------------------
+PROMPT_GETLINE:
+    PUSH H              ; Save target buffer address
+    PUSH PSW            ; Save A (max length)
+    XCHG                ; HL = Prompt address
+    CALL PRSTR          ; Output prompt string to console
+    POP PSW             ; Restore A (max length)
+    POP H               ; Restore target buffer address
+    CALL GETLINE        ; Read input line and null-terminate
+    RET
+
+
 UPPERCASE:
     CPI 'a'
     RC

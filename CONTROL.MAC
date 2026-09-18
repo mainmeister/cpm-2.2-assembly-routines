@@ -515,3 +515,15 @@ VT_DRAW_BOX MACRO ROW, COL, HEIGHT, WIDTH
     MVI C, WIDTH
     CALL VT_BOX
     ENDM
+
+; -----------------------------------------------------------------------------
+; 14. CONSOLE PROMPT & LINE INPUT MACROS (NEW in v14)
+; -----------------------------------------------------------------------------
+
+; Print PROMPT_PTR string and read line into BUF_PTR (up to MAX_LEN chars)
+PROMPT_GETLINE_MEM MACRO PROMPT_PTR, BUF_PTR, MAX_LEN
+    LXI DE, PROMPT_PTR
+    LXI HL, BUF_PTR
+    MVI A, MAX_LEN
+    CALL PROMPT_GETLINE
+    ENDM

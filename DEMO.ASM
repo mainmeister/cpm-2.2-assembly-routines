@@ -1,13 +1,13 @@
  ; =============================================================================
-; DEMO-v13.ASM - CP/M 2.2 Shell with Command Line Parsing & VT100 Support
-; Demonstrates CONTROL-v13.MAC macros and CPM22LIB-v13.ASM function library.
+; DEMO-v14.ASM - CP/M 2.2 Shell with Command Line Parsing & VT100 Support
+; Demonstrates CONTROL-v14.MAC macros and CPM22LIB-v14.ASM function library.
 ;
 ; Commands: DIR, TYPE, DEL, INFO, IO, SETCON, SETLST, FPTEST, BCDTEST, FIXTEST,
 ;           CRCTEST, CRCFILE, UARTTEST, INT32TEST, INT64TEST, MEMTEST, STRTEST,
 ;           ARGS, VT100, EXIT
 ; =============================================================================
 
-    INCLUDE CONTROL-v13.MAC
+    INCLUDE CONTROL-v14.MAC
 
     ORG     0100H
 
@@ -180,7 +180,16 @@ SHELL_LOOP:
     ENDIF_BL 15
 
     ; Command 16: "EXIT"
+    
+    ; Command Match: "ASK" (NEW in v14: Prompt & Read Line Test)
     LHLD    ARG1_PTR
+    LXI     DE, CMD_ASK
+    CALL    STRCMP
+    IF_ZERO 101
+        CALL    DO_ASK
+        JMP     SHELL_LOOP
+    ENDIF_BL 101
+LHLD    ARG1_PTR
     LXI     DE, CMD_EXIT
     CALL    STRCMP
     IF_ZERO 16
@@ -427,6 +436,31 @@ DO_FPTEST:
     CALL    PRNL
     RET
 
+
+; -----------------------------------------------------------------------------
+; PROMPT & READ LINE DEMONSTRATION ROUTINE (v14)
+; -----------------------------------------------------------------------------
+DO_ASK:
+    LXI     HL, MSG_ASK_HEADER
+    CALL    PRSTR
+    CALL    PRNL
+
+    ; Demonstrate PROMPT_GETLINE_MEM macro
+    PROMPT_GETLINE_MEM MSG_ASK_PROMPT, ASK_BUF, 40
+    ; HL now points to entered string, A = length
+
+    PUSH    HL
+    PUSH    PSW
+    LXI     HL, MSG_ASK_REPLY
+    CALL    PRSTR
+    POP     PSW
+    POP     HL
+    CALL    PRSTR
+    LXI     HL, MSG_ASK_BRACKET
+    CALL    PRSTR
+    CALL    PRNL
+    RET
+
 DO_DIR:
     LHLD    ARG2_PTR
     MOV     A, M
@@ -559,8 +593,12 @@ F_GETDRV_CALL:
 ; -----------------------------------------------------------------------------
 ; CONSTANTS AND STRINGS
 ; -----------------------------------------------------------------------------
+MSG_ASK_HEADER: DB  '--- Prompt & Read Line Utility Test ---', 0
+MSG_ASK_PROMPT: DB  'Please enter a response prompt> ', 0
+MSG_ASK_REPLY:  DB  'You responded with: [', 0
+MSG_ASK_BRACKET: DB  ']', 0
 MSG_BANNER:     DB  '==================================================', CR, LF
-                DB  '  Gemini CP/M 2.2 Shell & ANSI Terminal (v13.0)   ', CR, LF
+                DB  '  Gemini CP/M 2.2 Shell & ANSI Terminal (v14.0)   ', CR, LF
                 DB  '  Commands: ARGS, VT100, DIR, TYPE, DEL, INFO, IO,', CR, LF
                 DB  '            FPTEST, BCDTEST, FIXTEST, CRCTEST,', CR, LF
                 DB  '            INT32TEST, INT64TEST, MEMTEST, STRTEST, EXIT', CR, LF
@@ -626,6 +664,7 @@ CMD_INT32TEST:  DB  'INT32TEST', 0
 CMD_INT64TEST:  DB  'INT64TEST', 0
 CMD_MEMTEST:    DB  'MEMTEST', 0
 CMD_STRTEST:    DB  'STRTEST', 0
+CMD_ASK:        DB  'ASK', 0
 CMD_EXIT:       DB  'EXIT', 0
 STR_ALL_FILES:  DB  '*.*', 0
 
@@ -675,10 +714,11 @@ VAR_B:          DS  4
 
 HEAP_BUF:       DS  2048
 STR_WORK_BUF:   DS  32
+ASK_BUF:        DS  45          ; Buffer for prompt response
 TEMP_FCB:       DS  36
 CMD_BUF:        DS  64
 
-    INCLUDE CPM22LIB-v13.ASM
+    INCLUDE CPM22LIB-v14.ASM
 
                 DS  32
 STACK:          EQU $

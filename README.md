@@ -43,10 +43,10 @@ High-level control-flow constructs for assembly language without performance ove
 
 ## 📁 Repository Structure
 
-* **`CPM22LIB-v13.ASM`**: The complete assembly function library containing all core subroutines, buffer areas, and system equates.
-* **`CONTROL-v13.MAC`**: Macro library defining structured control constructs and high-level subroutine abstraction wrappers.
-* **`DEMO-v13.ASM`**: Full interactive command shell demonstration program showing real-world usage of all library subroutines and macros.
-* **`REFERENCES-v2.md`**: Complete annotated bibliography with direct web links to operating system manuals, textbooks, toolchains, and hardware datasheets.
+* **`CPM22LIB.ASM`**: The complete assembly function library containing all core subroutines, buffer areas, and system equates.
+* **`CONTROL.MAC`**: Macro library defining structured control constructs and high-level subroutine abstraction wrappers.
+* **`DEMO.ASM`**: Full interactive command shell demonstration program showing real-world usage of all library subroutines and macros.
+* **`citations.md`**: Complete annotated bibliography with direct web links to operating system manuals, textbooks, toolchains, and hardware datasheets.
 
 ---
 
